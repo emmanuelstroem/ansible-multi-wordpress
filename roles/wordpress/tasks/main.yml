@@ -1,0 +1,137 @@
+---
+# # Remove old wordpress site files
+# - name: Clean Old Site files
+#   file:
+#     path: /var/www/{{ item.value.name }}
+#     state: absent
+#   with_dict: "{{ domains_list }}"
+#   ignore_errors: yes
+
+# Download Wordpress
+- name: Download {{ wordpress }}
+  get_url:
+    url: https://wordpress.org/latest.tar.gz
+    dest: /var/www/{{ wordpress }}.tar.gz
+  register: download
+
+# Extract Wordpress
+- name: Extract Archive
+  unarchive:
+    src: /var/www/{{ wordpress }}.tar.gz
+    dest: /var/www/
+    remote_src: True
+  when: download is successful
+  register: unarchive
+
+# Setup {{ item.value.name }}
+- name: Setup {{ item.value.name }}.{{ item.value.ext }}
+  copy:
+    src: /var/www/{{ wordpress }}/
+    dest: /var/www/{{ item.value.name }}.{{ item.value.ext }}
+    directory_mode: yes
+    mode: 0750
+    owner: "{{ custom_user }}"
+    group: "{{ custom_user }}"
+  with_dict: "{{ domains_list }}"
+  when: unarchive is successful
+  register: rename
+
+# Fetch Random Salts for Wordpress
+- name: Fetch Random Salts
+  uri:
+    url: https://api.wordpress.org/secret-key/1.1/salt/
+    method: GET
+    return_content: yes
+  register: wp_salts
+  with_dict: "{{ domains_list }}"
+  become: no
+  when: rename is success
+
+# Remove Sample wp-config.php
+- name: Remove Sample wp-config.php from {{ item.value.name }}.{{ item.value.ext }}
+  file:
+    path: /var/www/{{ item.value.name }}.{{ item.value.ext }}/wp-config-sample.php
+    state: absent
+  with_dict: "{{ domains_list }}"
+  when: rename is success
+
+# # Change owner of {{ item.value.name }} to {{ customer_user }}
+# - name: Change owner of {{ item.value.name }} to {{ customer_user }}
+#   file:
+#     path: /var/www/{{ item.value.name }}
+#     owner: "{{ customer_user }}"
+#     group: "{{ customer_user }}"
+#     state: directory
+#     recurse: yes
+#     mode: 0750
+#   with_dict: "{{ domains_list }}"
+#   register: own_directory
+#   when: rename is success
+
+# Add wp-config.php
+- name: Add wp-config.php for {{ item.value.name }}
+  template:
+    src: wp-config.php
+    dest: /var/www/{{ item.value.name }}.{{ item.value.ext }}/wp-config.php
+  with_dict: "{{ domains_list }}"
+  when: rename is success
+
+# Add robots.txt
+- name: Add robots.txt for {{ item.value.name }}.{{ item.value.ext }}
+  template:
+    src: robots.txt
+    dest: /var/www/{{ item.value.name }}.{{ item.value.ext }}/robots.txt
+  with_dict: "{{ domains_list }}"
+  when: rename is success
+
+# Find Directories in /var/www/{{ item.value.name }}
+- name: Find list of directories {{ item.value.name }}.{{ item.value.ext }}
+  find:
+    paths: /var/www/{{ item.value.name }}.{{ item.value.ext }}
+    recurse: yes
+    file_type: directory
+  with_dict: "{{ domains_list }}"
+  when: rename is success
+  register: found_directories
+
+# Chmod Folders to 0750
+- name: Chmod {{ item.value.name }} directories to 0750
+  file:
+    dest: "{{ item.path }}"
+    mode: 0750
+  with_dict: "{{ domains_list }}"
+  when: found_directories is success
+  loop: "{{ found_directories.files }}"
+
+# Find Files in /var/www/{{ item.value.name }}
+- name: Find list of files in {{ item.value.name }}.{{ item.value.ext }}
+  find:
+    paths: /var/www/{{ item.value.name }}.{{ item.value.ext }}
+    recurse: yes
+    file_type: file
+  when: rename is success
+  register: found_files
+
+# Chmod Folders to 0640
+- name: Chmod files in {{ item.value.name }}.{{ item.value.ext }} to 0640
+  file:
+    dest: "{{ item.path }}"
+    mode: 0640
+  when: found_files is success
+  loop: "{{ found_files.files }}"
+
+# Chmod wp-config.php to 0400
+- name: Chmod files in {{ item.value.name }}.{{ item.value.ext }} to 0400
+  file:
+    dest: /var/www/{{ item.value.name }}.{{ item.value.ext }}/wp-config.php
+    mode: 0400
+  when: rename is succcess
+  register: installation
+  notify: restart php-fpm
+
+# Clean up downloaded files
+- name: Clean Up - {{ wordpress }}.tar.gz
+  file:
+    path: /var/www/{{ wordpress }}.tar.gz
+    state: absent
+  when: installation is successful
