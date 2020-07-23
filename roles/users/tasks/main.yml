@@ -1,0 +1,37 @@
+---
+# Change default shell to /bin/bash
+- name: Change {{ ubuntu_user }} shell to /bin/bash
+  user:
+    name: "{{ ubuntu_user }}"
+    shell: /bin/bash
+  become: yes
+  ignore_errors: yes
+
+# Create
+- name: Creat User Group '{{ custom_user_group }}'
+  group:
+    name: "{{ custom_user_group }}"
+    state: present
+
+- name: Add '{{ custom_user_group }}' group to /etc/sudoers
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%{{ custom_user_group }}'
+    line: '%{{ custom_user_group }} ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: Create User '{{ custom_user }}' in Group '{{ custom_user_group }}'
+  user:
+    name: "{{ custom_user }}"
+    groups: "{{ custom_user_group }}"
+    append: true
+    shell: /bin/bash
+    state: present
+    createhome: true
+
+# - name: Add SSH Pub Key to User '{{ custom_user }}'
+#   authorized_key:
+#     user: "{{ custom_user }}"
+#     state: present
+#     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
