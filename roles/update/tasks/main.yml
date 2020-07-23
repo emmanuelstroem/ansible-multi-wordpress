@@ -1,0 +1,16 @@
+# Install Aptitude
+- name: Upate Packages and Install Aptitude
+  apt:
+    name: aptitude
+    state: present
+    update_cache: yes
+
+# Upgrade distro
+- name: Upgrade Distro
+  apt:
+    upgrade: dist
+
+# Update Packages
+- name: Update Packages - Again
+  apt:
+    update_cache: yes
