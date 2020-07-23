@@ -1,0 +1,12 @@
+.DS_Store
+
+ansible.log
+
+hosts/*
+!hosts/example
+
+group_vars/*
+!group_vars/example.yaml
+
+/*.yaml
+!/example.yaml
