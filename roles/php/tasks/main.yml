@@ -1,0 +1,43 @@
+---
+- name: Install dbconfig-common
+  apt:
+    name: dbconfig-common
+    state: latest
+    install_recommends: no
+
+- name: Install dependencies
+  apt:
+    name: [
+      php-mysql,
+      php-cli,
+      php-json,
+      php-curl,
+      python3-pip,
+      php-fpm,
+      libmysqlclient-dev,
+      php-zip,
+      php-gd, # for wordpress image cropping
+      php-imagick # php imagemagick
+    ]
+    state: present
+    update_cache: yes
+
+- name: enable php mycrypt
+  raw: phpenmod mcrypt
+  notify: restart php-fpm
+  ignore_errors: yes
+
+- name: Set PHP date.timezone
+  lineinfile:
+    path: /etc/php/{{ php_version }}/fpm/php.ini
+    regexp: '^;date.timezone ='
+    line: 'date.timezone = UTC'
+    backrefs: yes
+  notify: restart php-fpm
+
+- name: Increase upload_max_filesize from 2M to 1024M
+  lineinfile:
+    path: /etc/php/{{ php_version }}/fpm/php.ini
+    regexp: '^upload_max_filesize'
+    line: 'upload_max_filesize = 1024M'
+  notify: restart php-fpm
