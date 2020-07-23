@@ -1,0 +1,95 @@
+---
+# Change standard SSH Port
+- name: Change Default SSH Port to {{ custom_ssh_port }}
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#Port 22'
+    line: Port {{ custom_ssh_port }}
+    owner: "{{ ubuntu_user }}"
+    group: "{{ ubuntu_user }}"
+  notify: restart sshd
+
+# Install Fail2Ban and UFW
+- name: Install Fail2Ban, UFW
+  apt:
+    name: [
+      fail2ban,
+      ufw
+    ]
+    state: latest
+
+# Allow only certain connections
+- name: Allow Related and Established connections
+  iptables:
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+  become: yes
+
+# Allow SYN packets ONLY on specified SSH Port
+- name: Allow Incoming Packets on Port '{{ custom_ssh_port }}' (SSH).
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: '{{ custom_ssh_port }}'
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+    comment: Accept new SSH connections on port '{{ custom_ssh_port }}'.
+  notify: restart fail2ban
+
+# DROP all incoming SYN packets on default SSH Port 22
+- name: Drop Incoming Packets on Port 22 (SSH).
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: '22'
+    ctstate: NEW
+    syn: match
+    jump: DROP
+    comment: Drop Incoming connections on port 22.
+  notify: restart fail2ban
+
+# Limit SSH Connection Attempts
+- name: Limit SSH Connection attempt to 6 in 30s
+  ufw:
+    rule: limit
+    port: ssh
+    proto: tcp
+
+# Allow Incoming Connection on Custom SSH Port
+- name: Allow Port {{ custom_ssh_port }}
+  ufw:
+    rule: allow
+    port: '{{ custom_ssh_port }}'
+    proto: tcp
+
+# Allow Incoming Connection on Port 80
+- name: Allow Port 80
+  ufw:
+    rule: allow
+    port: '80'
+    proto: tcp
+
+# Allow Incoming Connection on Port 443
+- name: Allow Port 443
+  ufw:
+    rule: allow
+    port: '443'
+    proto: tcp
+
+# Deny All Incoming Connections on Port 22
+- name: Deny Port 22
+  ufw:
+    rule: deny
+    port: '22'
+
+# Enable Firewall
+- name: Enable UFW
+  ufw:
+    state: enabled
+
+- name: Set logging ON and Restart UFW
+  ufw:
+    logging: 'on'
+  notify: restart ufw
