@@ -1,0 +1,28 @@
+# Domains
+domains_list:
+  example1:
+    name: example1
+    ext: com
+    salt: example1_salt
+    db_name: example1
+    db_user: example1
+    db_password: example1_secure_password
+    aws_access_key_id: <IF ANY>
+    aws_secret_access_key: <IF ANY>
+  example2:
+    name: example2
+    ext: com
+    salt: example2_salt
+    db_name: example2
+    db_user: example2
+    db_password: example2_secure_password
+    aws_access_key_id: <IF ANY>
+    aws_secret_access_key: <IF ANY>
+
+# PHP
+php_version: 7.4 #<fixme:>
+
+# Wordpress
+auto_up_disable: false
+core_update_level: true
+wordpress: wordpress
