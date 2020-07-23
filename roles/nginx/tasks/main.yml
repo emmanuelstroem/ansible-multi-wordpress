@@ -39,10 +39,10 @@
     - /etc/nginx/sites-available/default
 
 # Add Nginx Configs
-- name: Add Nginx Config for {{ item.value.name }}
+- name: Add Nginx Config for {{ item.value.name }}.{{ item.value.ext }}
   template:
     src: wordpress.conf
-    dest: /etc/nginx/sites-available/{{ item.value.name }}..{{ item.value.ext }}
+    dest: /etc/nginx/sites-available/{{ item.value.name }}.{{ item.value.ext }}
     force: yes
   with_dict: "{{ domains_list }}"
   notify: restart nginx
