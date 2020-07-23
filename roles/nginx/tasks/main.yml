@@ -29,14 +29,12 @@
     dest: /etc/nginx/nginx.conf
     backup: yes
 
-# Remove default nginx conf
-- name: Remove Default Nginx Config
-  file:
-    name: "{{ item }}"
-    state: absent
-  with_items:
-    - /etc/nginx/sites-enabled/default
-    - /etc/nginx/sites-available/default
+# Add Custom default Nginx Conf - Healthcheck
+- name: Add Default Nginx Config
+  template:
+    src: default.conf
+    dest: /etc/nginx/sites-available/default
+    force: yes
 
 # Add Nginx Configs
 - name: Add Nginx Config for {{ item.value.name }}.{{ item.value.ext }}
