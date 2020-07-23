@@ -1,0 +1,16 @@
+---
+- name: Setup Example
+  hosts: example #<fixme:>
+  gather_facts: False
+  remote_user: ubuntu #<fixme:>
+  become: yes
+
+  roles:
+    - common
+    - update
+    - security
+    - users
+    - nginx
+    - mysql
+    - php
+    - wordpress
