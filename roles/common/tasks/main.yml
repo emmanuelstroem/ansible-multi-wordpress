@@ -1,0 +1,11 @@
+---
+- name: Install git, python-simplejson, python-setuptools, ...
+  apt:
+    name: [
+      'git',
+      'python-simplejson',
+      'python-setuptools',
+      'python-dev',
+      'build-essential'
+    ]
+    state: latest
