@@ -67,7 +67,7 @@
 - name: Add wp-config.php for {{ item.value.name }}
   template:
     src: wp-config.php
-    dest: /var/www/{{ item.value.name }}.{{ item.value.ext }}/wp-config.php
+    dest: /var/www/{{ item.1.item.value.name }}.{{ item.1.item.value.ext }}/wp-config.php
   with_together:
     - "{{ domains_list }}"
     - "{{ wp_salts.results }}"
