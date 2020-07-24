@@ -23,17 +23,25 @@
   when: download is successful
   register: unarchive
 
+# Check existing wordpress directory
+- name: Check Exisitng Wordpress Folder
+  stat:
+    path: /var/www/{{ wordpress }}
+  register: wp_folder
+  when: unarchive is successful
+
 # Setup {{ item.value.name }}
 - name: Setup {{ item.value.name }}.{{ item.value.ext }}
   copy:
     src: /var/www/{{ wordpress }}/
     dest: /var/www/{{ item.value.name }}.{{ item.value.ext }}
     directory_mode: yes
+    remote_src: yes
     mode: 0750
     owner: "{{ custom_user }}"
     group: "{{ custom_user }}"
   with_dict: "{{ domains_list }}"
-  when: unarchive is successful
+  when: wp_folder.stat.isdir is defined and wp_folder.stat.isdir
   register: rename
 
 # Fetch Random Salts for Wordpress
