@@ -102,9 +102,9 @@
   register: installation
   notify: restart php-fpm
 
-# # Clean up downloaded files
-# - name: Clean Up - {{ wordpress }}.tar.gz
-#   file:
-#     path: "{{ web_root }}/{{ wordpress }}.tar.gz"
-#     state: absent
-#   when: installation is successful
+# Clean up downloaded files
+- name: Clean Up - {{ wordpress }}.tar.gz
+  file:
+    path: /var/www/{{ wordpress }}.tar.gz
+    state: absent
+  when: installation is successful
