@@ -1,16 +1,16 @@
 <?php
 
 /** The name of the database for WordPress */
-define('DB_NAME', '{{ item.value.db_name }}');
+define('DB_NAME', '{{ site.item.value.db_name }}');
 
 /** MySQL database username */
-define('DB_USER', '{{ item.value.db_user }}');
+define('DB_USER', '{{ site.item.value.db_user }}');
 
 /** MySQL database password */
-define('DB_PASSWORD', '{{ item.value.db_password }}');
+define('DB_PASSWORD', '{{ site.item.value.db_password }}');
 
 /** MySQL hostname */
-define('DB_HOST', '{{ item.value.db_host }}:{{ item.value.db_port }}');
+define('DB_HOST', '{{ site.item.value.db_host }}:{{ site.item.value.db_port }}');
 
 /** Database Charset to use in creating database tables. */
 define('DB_CHARSET', 'utf8');
@@ -22,8 +22,8 @@ define('DB_COLLATE', '');
 define('FS_METHOD','direct');
 
 /** AWS S3 Access */
-define( 'AS3CF_AWS_ACCESS_KEY_ID', '{{ item.value.aws_access_key_id }}' );
-define( 'AS3CF_AWS_SECRET_ACCESS_KEY', '{{ item.value.aws_secret_access_key }}' );
+define( 'AS3CF_AWS_ACCESS_KEY_ID', '{{ site.item.value.aws_access_key_id }}' );
+define( 'AS3CF_AWS_SECRET_ACCESS_KEY', '{{ site.item.value.aws_secret_access_key }}' );
 
 /**#@+
  * Authentication Unique Keys and Salts.
@@ -35,7 +35,7 @@ define( 'AS3CF_AWS_SECRET_ACCESS_KEY', '{{ item.value.aws_secret_access_key }}' 
  * @since 2.6.0
  */
 
-{{ salt }}
+{{ site.content }}
 
 /**#@-*/
 /**

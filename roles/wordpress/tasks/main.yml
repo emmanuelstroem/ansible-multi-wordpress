@@ -2,7 +2,7 @@
 # # Remove old wordpress site files
 # - name: Clean Old Site files
 #   file:
-#     path: /var/www/{{ item.value.name }}
+#     path: {{ web_root }}/{{ item.value.name }}
 #     state: absent
 #   with_dict: "{{ domains_list }}"
 #   ignore_errors: yes
@@ -11,7 +11,7 @@
 - name: Download {{ wordpress }}
   get_url:
     url: https://wordpress.org/latest.tar.gz
-    dest: /var/www/{{ wordpress }}.tar.gz
+    dest: "{{ web_root }}/{{ wordpress }}.tar.gz"
   register: download
 
 # Extract Wordpress
@@ -26,15 +26,15 @@
 # Check existing wordpress directory
 - name: Check Exisitng Wordpress Folder
   stat:
-    path: /var/www/{{ wordpress }}
+    path: "{{ web_root }}/{{ wordpress }}"
   register: wp_folder
-  when: unarchive is successful
+  # when: unarchive is successful
 
 # Setup {{ item.value.name }}
 - name: Setup {{ item.value.name }}.{{ item.value.ext }}
   copy:
-    src: /var/www/{{ wordpress }}/
-    dest: /var/www/{{ item.value.name }}.{{ item.value.ext }}
+    src: "{{ web_root }}/{{ wordpress }}/"
+    dest: "{{ web_root }}/{{ item.value.name }}.{{ item.value.ext }}"
     directory_mode: yes
     remote_src: yes
     mode: 0750
@@ -58,53 +58,53 @@
 # Remove Sample wp-config.php
 - name: Remove Sample wp-config.php from {{ item.value.name }}.{{ item.value.ext }}
   file:
-    path: /var/www/{{ item.value.name }}.{{ item.value.ext }}/wp-config-sample.php
+    path: "{{ web_root }}/{{ item.value.name }}.{{ item.value.ext }}/wp-config-sample.php"
     state: absent
   with_dict: "{{ domains_list }}"
   when: rename is success
 
 # Add wp-config.php
-- name: Add wp-config.php for {{ item.value.name }}
+- name: Add wp-config.php
   template:
     src: wp-config.php
-    dest: /var/www/{{ item.1.item.value.name }}.{{ item.1.item.value.ext }}/wp-config.php
+    dest: "{{ web_root }}/{{ item.1.item.value.name }}.{{ item.1.item.value.ext }}/wp-config.php"
   with_together:
     - "{{ domains_list }}"
     - "{{ wp_salts.results }}"
   when: ( item.1.item.key == item.0 )
   vars:
-    salt: "{{ item.1.content }}"
+    site: "{{ item.1 }}"
 
 # Add robots.txt
 - name: Add robots.txt for {{ item.value.name }}.{{ item.value.ext }}
   template:
     src: robots.txt
-    dest: /var/www/{{ item.value.name }}.{{ item.value.ext }}/robots.txt
+    dest: "{{ web_root }}/{{ item.value.name }}.{{ item.value.ext }}/robots.txt"
   with_dict: "{{ domains_list }}"
   when: rename is success
 
 # Chmod Folders to 0750
 - name: Chmod {{ item.value.name }} directories to 0750
-  command: find /var/www/{{ item.value.name }}.{{ item.value.ext }} -type d -exec chmod -c 0750 {} \;
+  command: find {{ web_root }}/{{ item.value.name }}.{{ item.value.ext }} -type d -exec chmod -c 0750 {} \;
   with_dict: "{{ domains_list }}"
 
 # Chmod Folders to 0640
 - name: Chmod files in {{ item.value.name }}.{{ item.value.ext }} to 0640
-  command: find /var/www/{{ item.value.name }}.{{ item.value.ext }}  -type f -exec chmod -c 0640 {} \;
+  command: find {{ web_root }}/{{ item.value.name }}.{{ item.value.ext }}  -type f -exec chmod -c 0640 {} \;
   with_dict: "{{ domains_list }}"
 
 # Chmod wp-config.php to 0400
 - name: Chmod files in {{ item.value.name }}.{{ item.value.ext }} to 0400
   file:
-    dest: /var/www/{{ item.value.name }}.{{ item.value.ext }}/wp-config.php
+    dest: "{{ web_root }}/{{ item.value.name }}.{{ item.value.ext }}/wp-config.php"
     mode: 0400
   with_dict: "{{ domains_list }}"
   register: installation
   notify: restart php-fpm
 
-# Clean up downloaded files
-- name: Clean Up - {{ wordpress }}.tar.gz
-  file:
-    path: /var/www/{{ wordpress }}.tar.gz
-    state: absent
-  when: installation is successful
+# # Clean up downloaded files
+# - name: Clean Up - {{ wordpress }}.tar.gz
+#   file:
+#     path: "{{ web_root }}/{{ wordpress }}.tar.gz"
+#     state: absent
+#   when: installation is successful
