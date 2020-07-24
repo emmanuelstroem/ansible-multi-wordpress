@@ -51,7 +51,7 @@
     method: GET
     return_content: True
   register: wp_salts
-  # with_dict: "{{ domains_list }}"
+  with_dict: "{{ domains_list }}"
   become: no
   when: rename is success
 
