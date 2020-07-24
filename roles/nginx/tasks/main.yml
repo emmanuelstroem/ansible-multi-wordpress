@@ -36,6 +36,13 @@
     dest: /etc/nginx/sites-available/default
     force: yes
 
+# Symlink default Nginx Conf - Healthcheck
+- name: Add Default Nginx Config
+  file:
+    src: /etc/nginx/sites-available/default
+    dest: /etc/nginx/sites-enabled/default
+    state: link
+
 # Add Nginx Configs
 - name: Add Nginx Config for {{ item.value.name }}.{{ item.value.ext }}
   template:
