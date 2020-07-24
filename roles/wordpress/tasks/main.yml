@@ -71,6 +71,7 @@
   with_together:
     - "{{ domains_list }}"
     - "{{ wp_salts.results }}"
+  when: ( item.1.item.key == item.0 )
   vars:
     salt: "{{ item.1.content }}"
 
