@@ -35,7 +35,7 @@ define( 'AS3CF_AWS_SECRET_ACCESS_KEY', '{{ item.value.aws_secret_access_key }}' 
  * @since 2.6.0
  */
 
-{{ salts[0] }}
+{{ salt }}
 
 /**#@-*/
 /**
