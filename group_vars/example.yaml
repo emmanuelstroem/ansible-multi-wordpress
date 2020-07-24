@@ -31,6 +31,8 @@ domains_list:
 # PHP
 php_version: 7.4 #<fixme:>
 
+web_root: /var/www #<fixme:>
+
 # Wordpress
 auto_up_disable: false
 core_update_level: true
